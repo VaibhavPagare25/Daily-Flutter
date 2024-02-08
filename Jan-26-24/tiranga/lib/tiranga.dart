@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 class Tiranga extends StatelessWidget {
@@ -24,7 +22,7 @@ class Tiranga extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                margin: EdgeInsets.only(top: 50, right: 5),
+                margin: const EdgeInsets.only(top: 50, right: 5),
                 height: 700,
                 width: 10,
                 color: Colors.brown,
@@ -52,7 +50,7 @@ class Tiranga extends StatelessWidget {
                     color: Colors.green,
                   ),
                   Container(
-                    margin: EdgeInsets.only(top: 50),
+                    margin: const EdgeInsets.only(top: 50),
                     child: const Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
