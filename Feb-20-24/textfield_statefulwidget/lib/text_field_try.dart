@@ -1,5 +1,6 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 
 class TextFieldTry extends StatefulWidget {
   const TextFieldTry({super.key});
@@ -18,15 +19,15 @@ class _TextFieldTryState extends State<TextFieldTry> {
   String? loc;
 
   bool buttonPressed = false;
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   nameController.addListener(nameControllerMethod);
-  // }
+  @override
+  void initState() {
+    super.initState();
+    nameController.addListener(nameControllerMethod);
+  }
 
-  // void nameControllerMethod() {
-  //   print("In name controlller: ${nameController.text}");
-  // }
+  void nameControllerMethod() {
+    print("In name controlller: ${nameController.text}");
+  }
 
   @override
   Widget build(BuildContext context) {
