@@ -1,12 +1,26 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+
+class MyWidget extends StatelessWidget {
+  const MyWidget({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox.shrink(
+      child: WLifecycle(),
+    );
+  }
+}
 
 class WLifecycle extends StatefulWidget {
   const WLifecycle({super.key});
 
   @override
-  State<WLifecycle> createState() => _WLifecycleState();
+  State<WLifecycle> createState() {
+    print("In create state");
+    return _WLifecycleState();
+  }
 }
 
 class _WLifecycleState extends State<WLifecycle> {
@@ -44,21 +58,13 @@ class _WLifecycleState extends State<WLifecycle> {
                       setState(() {
                         message = 'Updated Message!';
                         print("In setState");
-                        count++;
                       });
                     },
                     child: const Text('Update Message'),
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      setState(() {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const NextPage(),
-                          ),
-                        );
-                      });
+                      setState(() {});
                     },
                     child: const Text("NextPage"),
                   ),
@@ -78,7 +84,6 @@ class _WLifecycleState extends State<WLifecycle> {
                     onPressed: () {
                       setState(() {
                         print("in setState previous");
-                        count--;
                       });
                     },
                     child: const Text("Previous"),
