@@ -71,14 +71,16 @@ class _TodoState extends State<Todo> {
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             // SizedBox(
                             //   height: 10,
                             // ),
-                            Center(
+                            SizedBox(
+                              width: 250,
                               child: Text(
                                 allData[index].title,
-                                overflow: TextOverflow.ellipsis,
+                                //overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   color: Colors.black,
                                   fontWeight: FontWeight.bold,
@@ -99,31 +101,42 @@ class _TodoState extends State<Todo> {
                         ),
                       ],
                     ),
-                    const Row(
+                    Row(
                       children: [
-                        SizedBox(
+                        const SizedBox(
                           width: 15,
                         ),
-                        Text(
+                        const Text(
                           "10 July 2023",
                         ),
-                        Spacer(),
+                        const Spacer(),
                         Padding(
-                          padding: EdgeInsets.only(
+                          padding: const EdgeInsets.only(
                             right: 10,
                           ),
-                          child: Icon(
-                            Icons.edit_outlined,
-                            color: Colors.cyan,
-                          ),
+                          child: GestureDetector(
+                              child: const Icon(
+                                Icons.edit_outlined,
+                                color: Colors.cyan,
+                              ),
+                              onTap: () {
+                                _showModalBottomSheet(editIndex: index);
+                              }),
                         ),
                         Padding(
-                          padding: EdgeInsets.only(
+                          padding: const EdgeInsets.only(
                             right: 10,
                           ),
-                          child: Icon(
-                            Icons.delete_outline,
-                            color: Colors.cyan,
+                          child: GestureDetector(
+                            child: const Icon(
+                              Icons.delete_outline,
+                              color: Colors.cyan,
+                            ),
+                            onTap: () {
+                              setState(() {
+                                allData.removeAt(index);
+                              });
+                            },
                           ),
                         )
                       ],
@@ -138,18 +151,23 @@ class _TodoState extends State<Todo> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _showModalBottomSheet(context);
+          _showModalBottomSheet();
           titleCon.clear();
           desCon.clear();
         },
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }
 
-  void _showModalBottomSheet(context) {
+  void _showModalBottomSheet({int? editIndex}) {
     String title;
     String description;
+
+    if (editIndex != null) {
+      titleCon.text = allData[editIndex].title;
+      desCon.text = allData[editIndex].description;
+    }
 
     showModalBottomSheet(
       isScrollControlled: true,
@@ -304,12 +322,19 @@ class _TodoState extends State<Todo> {
                       setState(() {
                         title = titleCon.text;
                         description = desCon.text;
-                        allData.add(
-                          Task(
+                        if (editIndex != null) {
+                          allData[editIndex] = Task(
                             title: title,
                             description: description,
-                          ),
-                        );
+                          );
+                        } else {
+                          allData.add(
+                            Task(
+                              title: title,
+                              description: description,
+                            ),
+                          );
+                        }
                       });
                       Navigator.pop(context);
                     },
