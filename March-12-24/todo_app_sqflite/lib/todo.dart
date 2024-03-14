@@ -3,7 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:todo_app_sqflite/model_class.dart';
+import 'main.dart';
 
 class ToDoAppp extends StatefulWidget {
   const ToDoAppp({super.key});
@@ -16,6 +18,8 @@ class _ToDoApppState extends State<ToDoAppp> {
   TextEditingController titleCon = TextEditingController();
   TextEditingController descriptionCon = TextEditingController();
   TextEditingController dateCon = TextEditingController();
+
+  GlobalKey<FormState> _taskKey = GlobalKey<FormState>();
 
   List<Model> dispData = [];
 
@@ -123,7 +127,9 @@ class _ToDoApppState extends State<ToDoAppp> {
                                 const Spacer(),
                                 IconButton(
                                   onPressed: () {
-                                    editCard(dispData[index]);
+                                    _showBottomSheet(taskObj: dispData[index]);
+                                    // await loadContent();
+                                    //setState(() {});
                                   },
                                   icon: const Icon(
                                     Icons.edit_outlined,
@@ -131,12 +137,12 @@ class _ToDoApppState extends State<ToDoAppp> {
                                   ),
                                 ),
                                 IconButton(
-                                  onPressed: () {
+                                  onPressed: () async {
+                                    await removeCard(dispData[index]);
+                                    await loadContent();
                                     setState(() {
                                       // dispData.removeWhere((task) =>
                                       //     task.id == dispData[index].id);
-
-                                      removeCard(dispData[index]);
 
                                       ///dispData.removeAt(index);
                                     });
@@ -172,6 +178,7 @@ class _ToDoApppState extends State<ToDoAppp> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          print("In floatingActionButon");
           setState(() {
             titleCon.clear();
             descriptionCon.clear();
@@ -184,45 +191,153 @@ class _ToDoApppState extends State<ToDoAppp> {
     );
   }
 
-  void editCard(Model editObj) {
-    titleCon.text = editObj.maptitle;
-    descriptionCon.text = editObj.mapdescription;
-    dateCon.text = editObj.mapdate;
-    _showBottomSheet(editObj: editObj);
+  @override
+  void initState() {
+    super.initState();
+    loadContent();
   }
 
-  void removeCard(Model removeObj) {
-    setState(() {
-      dispData.remove(removeObj);
-    });
+  Future<void> loadContent() async {
+    // List<Model> data = await getMapData();
+    dispData = await getMapData();
+    setState(() {});
   }
 
-  void submitCard({Model? editObj}) {
-    setState(() {
-      //If all data is present in the controller then only it will add a new task
-      if (titleCon.text.trim().isNotEmpty &&
-          descriptionCon.text.trim().isNotEmpty &&
-          dateCon.text.trim().isNotEmpty) {
-        if (editObj != null) {
-          editObj.maptitle = titleCon.text;
-          editObj.mapdescription = descriptionCon.text;
-          editObj.mapdate = dateCon.text;
-        } else {
-          // Adding a new task
-          dispData.add(
-            Model(
-              // id: uniqueId,
-              maptitle: titleCon.text.trim(),
-              mapdescription: descriptionCon.text.trim(),
-              mapdate: dateCon.text.trim(),
-            ),
-          );
-        }
+  // void editCard(Model editObj) {
+  //   titleCon.text = editObj.maptitle;
+  //   descriptionCon.text = editObj.mapdescription;
+  //   dateCon.text = editObj.mapdate;
+  //   _showBottomSheet(editObj: editObj);
+  // }
+
+  // void removeCard(Model removeObj) {
+  //   setState(() {
+  //     dispData.remove(removeObj);
+  //   });
+  // }
+
+  // void submitCard({Model? editObj}) {
+  //   setState(() {
+  //     //If all data is present in the controller then only it will add a new task
+  //     bool isValidated = _taskKey.currentState!.validate();
+  //     if (isValidated) {
+  //       // if (titleCon.text.trim().isNotEmpty &&
+  //       //     descriptionCon.text.trim().isNotEmpty &&
+  //       //     dateCon.text.trim().isNotEmpty) {
+  //       if (editObj != null) {
+  //         editObj.maptitle = titleCon.text.trim();
+  //         editObj.mapdescription = descriptionCon.text.trim();
+  //         editObj.mapdate = dateCon.text.trim();
+  //       } else {
+  //         // Adding a new task
+  //         dispData.add(
+  //           Model(
+  //             // id: uniqueId,
+  //             maptitle: titleCon.text.trim(),
+  //             mapdescription: descriptionCon.text.trim(),
+  //             mapdate: dateCon.text.trim(),
+  //           ),
+  //         );
+  //       }
+  //       // }
+  //       if (editObj == null) {
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           const SnackBar(
+  //             content: Text("Task added"),
+  //           ),
+  //         );
+  //       } else {
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           const SnackBar(
+  //             content: Text("Task Updated"),
+  //           ),
+  //         );
+  //       }
+  //     }
+  //   });
+  //   //uniqueId++;
+  //   clearControllers();
+  //   Navigator.pop(context);
+  // }
+
+  Future<List<Model>> getMapData() async {
+    final localDB = await database;
+
+    if (localDB != null) {
+      List<Map<String, dynamic>> cardList = await localDB.query('Todo');
+
+      return List.generate(cardList.length, (index) {
+        return Model(
+          id: cardList[index]['id'],
+          maptitle: cardList[index]['maptitle'],
+          mapdescription: cardList[index]['mapdescription'],
+          mapdate: cardList[index]['mapdate'],
+        );
+      });
+    } else {
+      return [];
+    }
+  }
+
+  void submit({Model? taskObj}) async {
+    bool isValidated = _taskKey.currentState!.validate();
+    if (isValidated) {
+      if (taskObj != null) {
+        editCard(taskObj);
+      } else {
+        await addCard(
+          Model(
+            maptitle: titleCon.text.trim(),
+            mapdescription: descriptionCon.text.trim(),
+            mapdate: dateCon.text.trim(),
+          ),
+        );
       }
-    });
-    //uniqueId++;
-    clearControllers();
-    Navigator.pop(context);
+    }
+  }
+
+  Future<void> addCard(Model taskObj) async {
+    final localDB = await database;
+
+    if (localDB != null) {
+      await localDB.insert(
+        "Todo",
+        taskObj.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    print(await getMapData());
+  }
+
+  Future<void> editCard(Model editObj) async {
+    final localDB = await database;
+
+    // editObj = Model(
+    //   maptitle: titleCon.text.trim(),
+    //   mapdescription: descriptionCon.text.trim(),
+    //   mapdate: dateCon.text.trim(),
+    // );
+    editObj.maptitle = titleCon.text.trim();
+    editObj.mapdescription = descriptionCon.text.trim();
+    editObj.mapdate = dateCon.text.trim();
+
+    await localDB.update(
+      'Todo',
+      editObj.toMap(),
+      where: 'id = ?',
+      whereArgs: [editObj.id],
+    );
+  }
+
+  Future<void> removeCard(Model removeObj) async {
+    final localDB = await database;
+
+    await localDB.delete(
+      'Todo',
+      where: 'id = ?',
+      whereArgs: [removeObj.id],
+    );
+    print(await getMapData());
   }
 
   void clearControllers() {
@@ -231,7 +346,12 @@ class _ToDoApppState extends State<ToDoAppp> {
     dateCon.clear();
   }
 
-  void _showBottomSheet({Model? editObj}) {
+  void _showBottomSheet({Model? taskObj}) {
+    if (taskObj != null) {
+      titleCon.text = taskObj.maptitle;
+      descriptionCon.text = taskObj.mapdescription;
+      dateCon.text = taskObj.mapdate;
+    }
     showModalBottomSheet(
       isScrollControlled: true,
       context: context,
@@ -243,200 +363,223 @@ class _ToDoApppState extends State<ToDoAppp> {
             ),
             // height: 500,
             width: double.infinity,
-            child: Column(
-              //mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(
-                  height: 15,
-                ),
-                Container(
-                  child: Text(
-                    "Create Task",
-                    style: GoogleFonts.quicksand(
-                      textStyle: const TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    textAlign: TextAlign.start,
+            child: Form(
+              key: _taskKey,
+              child: Column(
+                //mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(
+                    height: 15,
                   ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Container(
-                  width: 380,
-                  margin: const EdgeInsets.only(
-                    bottom: 5,
-                  ),
-                  alignment: Alignment.topLeft,
-                  child: Text(
-                    "Title",
-                    style: TextStyle(
-                      color: Colors.cyan.shade600,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: 380,
-                  child: TextField(
-                    // maxLines: null,
-                    controller: titleCon,
-                    cursorColor: Colors.cyan.shade600,
-                    decoration: InputDecoration(
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(
-                          color: Colors.cyan.shade600,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(
-                          color: Colors.cyan.shade600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 16,
-                ),
-                Container(
-                  width: 380,
-                  margin: const EdgeInsets.only(
-                    bottom: 5,
-                  ),
-                  alignment: Alignment.topLeft,
-                  child: Text(
-                    "Description",
-                    style: TextStyle(
-                      color: Colors.cyan.shade600,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: 380,
-                  child: TextField(
-                    maxLines: null,
-                    controller: descriptionCon,
-                    cursorColor: Colors.cyan.shade600,
-                    decoration: InputDecoration(
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(
-                          color: Colors.cyan.shade600,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(
-                          color: Colors.cyan.shade600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 16,
-                ),
-                Container(
-                  width: 380,
-                  margin: const EdgeInsets.only(
-                    bottom: 5,
-                  ),
-                  alignment: Alignment.topLeft,
-                  child: Text(
-                    "Date",
-                    style: TextStyle(
-                      color: Colors.cyan.shade600,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: 380,
-                  child: TextField(
-                    keyboardType: TextInputType.datetime,
-                    controller: dateCon,
-                    cursorColor: Colors.cyan.shade600,
-                    decoration: InputDecoration(
-                      suffixIcon: const Icon(
-                        Icons.date_range_outlined,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(
-                          color: Colors.cyan.shade600,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(
-                          color: Colors.cyan.shade600,
-                        ),
-                      ),
-                    ),
-                    readOnly: true,
-                    onTap: () async {
-                      DateTime? pickedDate = await showDatePicker(
-                        context: context,
-                        initialDate: DateTime.now(),
-                        firstDate: DateTime(2022),
-                        lastDate: DateTime(2026),
-                      );
-                      String formatedDate =
-                          DateFormat.yMMMd().format(pickedDate!);
-                      setState(
-                        () {
-                          dateCon.text = formatedDate;
-                        },
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                SizedBox(
-                  width: 300,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ButtonStyle(
-                      shape: MaterialStatePropertyAll(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      backgroundColor: MaterialStatePropertyAll(
-                        Colors.cyan.shade600,
-                      ),
-                    ),
-                    onPressed: () {
-                      if (editObj != null) {
-                        submitCard(editObj: editObj);
-                      } else {
-                        submitCard();
-                      }
-                    },
+                  Container(
                     child: Text(
-                      "Submit",
+                      "Create Task",
                       style: GoogleFonts.quicksand(
                         textStyle: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      textAlign: TextAlign.start,
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Container(
+                    width: 380,
+                    margin: const EdgeInsets.only(
+                      bottom: 5,
+                    ),
+                    alignment: Alignment.topLeft,
+                    child: Text(
+                      "Title",
+                      style: TextStyle(
+                        color: Colors.cyan.shade600,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 380,
+                    child: TextFormField(
+                      // maxLines: null,
+                      controller: titleCon,
+                      cursorColor: Colors.cyan.shade600,
+                      decoration: InputDecoration(
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: Colors.cyan.shade600,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: Colors.cyan.shade600,
+                          ),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return "Please enter some data";
+                        } else {
+                          return null;
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  Container(
+                    width: 380,
+                    margin: const EdgeInsets.only(
+                      bottom: 5,
+                    ),
+                    alignment: Alignment.topLeft,
+                    child: Text(
+                      "Description",
+                      style: TextStyle(
+                        color: Colors.cyan.shade600,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 380,
+                    child: TextFormField(
+                      maxLines: null,
+                      controller: descriptionCon,
+                      cursorColor: Colors.cyan.shade600,
+                      decoration: InputDecoration(
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: Colors.cyan.shade600,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: Colors.cyan.shade600,
+                          ),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return "Please enter some data";
+                        } else {
+                          return null;
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  Container(
+                    width: 380,
+                    margin: const EdgeInsets.only(
+                      bottom: 5,
+                    ),
+                    alignment: Alignment.topLeft,
+                    child: Text(
+                      "Date",
+                      style: TextStyle(
+                        color: Colors.cyan.shade600,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 380,
+                    child: TextFormField(
+                      keyboardType: TextInputType.datetime,
+                      controller: dateCon,
+                      cursorColor: Colors.cyan.shade600,
+                      decoration: InputDecoration(
+                        suffixIcon: const Icon(
+                          Icons.date_range_outlined,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: Colors.cyan.shade600,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: Colors.cyan.shade600,
+                          ),
+                        ),
+                      ),
+                      readOnly: true,
+                      onTap: () async {
+                        DateTime? pickedDate = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(2022),
+                          lastDate: DateTime(2026),
+                        );
+                        String formatedDate =
+                            DateFormat.yMMMd().format(pickedDate!);
+                        setState(
+                          () {
+                            dateCon.text = formatedDate;
+                          },
+                        );
+                      },
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return "Please enter some data";
+                        } else {
+                          return null;
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  SizedBox(
+                    width: 300,
+                    height: 50,
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                        shape: MaterialStatePropertyAll(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        backgroundColor: MaterialStatePropertyAll(
+                          Colors.cyan.shade600,
+                        ),
+                      ),
+                      onPressed: () {
+                        submit(taskObj: taskObj);
+                        //(editObj: editObj);
+                        Navigator.pop(context);
+                        loadContent();
+                      },
+                      child: Text(
+                        "Submit",
+                        style: GoogleFonts.quicksand(
+                          textStyle: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-              ],
+                  const SizedBox(
+                    height: 20,
+                  ),
+                ],
+              ),
             ),
           ),
         );
