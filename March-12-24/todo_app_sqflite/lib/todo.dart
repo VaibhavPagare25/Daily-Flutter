@@ -293,6 +293,19 @@ class _ToDoApppState extends State<ToDoAppp> {
           ),
         );
       }
+      if (taskObj == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Task added"),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Task Updated"),
+          ),
+        );
+      }
     }
   }
 
