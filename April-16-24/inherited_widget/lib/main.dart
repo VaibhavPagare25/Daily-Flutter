@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:inherited_widget/ephemeral_state.dart';
 import 'package:inherited_widget/implementation.dart';
 import 'package:inherited_widget/inherited_widget.dart';
 
