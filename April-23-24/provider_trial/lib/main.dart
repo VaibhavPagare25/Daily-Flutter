@@ -35,13 +35,16 @@ class MyApp extends StatelessWidget {
 }
 
 class ProviderTrial extends StatefulWidget {
-  const ProviderTrial({super.key});
+  const ProviderTrial({super.key, required this.name});
+  final String name;
 
   @override
   State<ProviderTrial> createState() => _ProviderTrialState();
 }
 
 class _ProviderTrialState extends State<ProviderTrial> {
+  String name = "Vaibhav";
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,7 +65,7 @@ class _ProviderTrialState extends State<ProviderTrial> {
           ),
           Text(Provider.of<Company>(context).empCount.toString()),
           Text("${Provider.of<Company>(context).empCount}"),
-          const SecondClass(),
+          SecondClass(name: name),
         ],
       ),
     );
@@ -70,7 +73,8 @@ class _ProviderTrialState extends State<ProviderTrial> {
 }
 
 class SecondClass extends StatelessWidget {
-  const SecondClass({super.key});
+  final String name;
+  const SecondClass({super.key, required this.name});
 
   @override
   Widget build(BuildContext context) {
