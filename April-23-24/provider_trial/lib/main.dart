@@ -66,6 +66,7 @@ class _ProviderTrialState extends State<ProviderTrial> {
           Text(Provider.of<Company>(context).empCount.toString()),
           Text("${Provider.of<Company>(context).empCount}"),
           SecondClass(name: name),
+          Text("${Provider.of<Company>(context).empCount}"),
         ],
       ),
     );
