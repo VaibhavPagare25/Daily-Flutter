@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:developer';
 import 'package:provider/provider.dart';
 
 void main() => runApp(const MyApp());
@@ -8,6 +9,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    log("In MyApp build");
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
@@ -35,6 +37,7 @@ class CompanyData extends StatefulWidget {
 class _CompanyDataState extends State<CompanyData> {
   @override
   Widget build(BuildContext context) {
+    log("In CompanyData build");
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -52,7 +55,8 @@ class _CompanyDataState extends State<CompanyData> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            Provider.of<Company>(context).compName,
+            "Hey",
+            // Provider.of<Company>(context).compName,
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 25,
@@ -62,9 +66,10 @@ class _CompanyDataState extends State<CompanyData> {
             height: 10,
             width: double.infinity,
           ),
-          Text(
-            Provider.of<Company>(context).empName,
-            style: const TextStyle(
+          const Text(
+            // Provider.of<Company>(context).empName,
+            "Hello",
+            style: TextStyle(
               fontWeight: FontWeight.w400,
               fontSize: 20,
             ),
@@ -72,13 +77,16 @@ class _CompanyDataState extends State<CompanyData> {
           const SizedBox(
             height: 10,
           ),
-          Text(
-            "${Provider.of<Company>(context).empId}",
-            style: const TextStyle(
-              fontWeight: FontWeight.w400,
-              fontSize: 20,
-            ),
-          ),
+          Consumer(builder: (context, value, child) {
+            log("In Consumer");
+            return Text(
+              "${Provider.of<Company>(context).empId}",
+              style: const TextStyle(
+                fontWeight: FontWeight.w400,
+                fontSize: 20,
+              ),
+            );
+          }),
           const SizedBox(
             height: 20,
           ),
