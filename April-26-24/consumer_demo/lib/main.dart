@@ -54,10 +54,10 @@ class _CompanyDataState extends State<CompanyData> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
+          const Text(
             "Hey",
             // Provider.of<Company>(context).compName,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 25,
             ),
