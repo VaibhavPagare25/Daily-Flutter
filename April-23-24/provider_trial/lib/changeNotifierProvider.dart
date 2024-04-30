@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -52,3 +54,16 @@ class Employee extends ChangeNotifier {
     notifyListeners();
   }
 }
+
+// class Company extends ChangeNotifier {
+//   String compName;
+//   int empCount;
+
+//   Company({required this.compName, required this.empCount});
+
+//   void changeCompany(String compName, int empCount) {
+//     this.compName = compName;
+//     this.empCount = empCount;
+//     notifyListeners();
+//   }
+// }
