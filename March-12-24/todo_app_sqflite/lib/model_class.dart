@@ -24,6 +24,11 @@ class Model {
   String toString() {
     return '{id : $id, maptitle : $maptitle, mapdescription : $mapdescription, mapdate : $mapdate}';
   }
+
+  // @override
+  // String toString() {
+  //   return '{id : $id, maptitle : $maptitle, mapdescription : $mapdescription, mapdate : $mapdate}';
+  // }
 }
 
 List colors = [
