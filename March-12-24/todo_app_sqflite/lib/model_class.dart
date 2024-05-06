@@ -29,6 +29,16 @@ class Model {
     };
   }
 
+  //Tried some new variations of toMap and learn something
+  Map<String, dynamic> toMap2() {
+    return {
+      // 'id': id,
+      'maptitle': maptitle,
+      'mapdescription': mapdescription,
+      'mapdate': mapdate,
+    };
+  }
+
   @override
   String toString() {
     return '{id : $id, maptitle : $maptitle, mapdescription : $mapdescription, mapdate : $mapdate}';
